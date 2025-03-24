@@ -10,7 +10,7 @@ function getPerson(id: number) {
 
 function getPersonByGitHub(githubId: number) {
   return pool.query(
-    `SELECT users.id, users.name, users.avatar, oauth_mapping.oauth_id
+    `SELECT users.id, users.name, users.avatar, users.role, oauth_mapping.oauth_id
       FROM users
       JOIN oauth_mapping on oauth_mapping.user_id = users.id
       WHERE oauth_mapping.oauth_id = $1`,

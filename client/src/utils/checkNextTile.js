@@ -1,46 +1,47 @@
-import { MAP_TABLE } from '../utils/constants';
-import { initX, initY, stepSize } from '../utils/constants';
-function getNextTile(direction, x, y) {
-  //relative position related x and y
-  let position = { left: x, top: y };
-  let newPos;
-  //Map array coordinates:
-  let X;
-  let Y;
-  // console.log("direction :>> ", direction);
-  // console.log("postion :>> ", position);
+import { MAP_TABLE, INTERIOR_OFFICE_MAP, spriteDimensions, viewportWidth, viewportHeight, basemapWidth, basemapHeight } from '../utils/constants';
+import { stepSize } from '../utils/constants';
 
+function getNextTile(direction, x, y, mapTable) {
+  const tileSize = spriteDimensions.w; // 32 pixels
+  
+  // Calculate the next position based on direction
+  let checkX = x;
+  let checkY = y;
+  
   switch (direction) {
     case 'ArrowDown':
-      newPos = position.top + stepSize;
-      X = (position.left - (position.left % 32)) / 32;
-      Y = (newPos - (newPos % 32)) / 32;
-
-      return MAP_TABLE[Y][X];
-
+      checkY = y + stepSize;
+      break;
+      
     case 'ArrowLeft':
-      newPos = position.left - stepSize;
-      X = (newPos - (newPos % 32)) / 32;
-      Y = (position.top - (position.top % 32)) / 32;
-
-      return MAP_TABLE[Y][X];
-
+      checkX = x - stepSize; // Check at left edge
+      break;
+      
     case 'ArrowRight':
-      newPos = position.left + stepSize;
-      X = (newPos - (newPos % 32)) / 32;
-      Y = (position.top - (position.top % 32)) / 32;
-
-      return MAP_TABLE[Y][X];
-
+      checkX = x + stepSize; // Check at right edge
+      break;
+      
     case 'ArrowUp':
-      newPos = position.top - stepSize;
-      X = (position.left - (position.left % 32)) / 32;
-      Y = (newPos - (newPos % 32)) / 32;
-
-      return MAP_TABLE[Y][X];
-
+      checkY = y - stepSize; // Check at top edge
+      break;
+      
     default:
+      return null;
   }
+  
+  // Convert check position to tile coordinates
+  const tileX = Math.floor(checkX / tileSize);
+  const tileY = Math.floor(checkY / tileSize);
+  
+  // Determine which map to check based on Y position
+  
+  // Ensure we don't access array out of bounds
+  if (tileY >= 0 && tileY < mapTable.length && tileX >= 0 && tileX < mapTable[0].length) {
+    return mapTable[tileY][tileX];
+  }
+  
+  // Return a non-walkable tile if out of bounds
+  return { walk: false, action: false, special: false };
 }
 
 export default getNextTile;

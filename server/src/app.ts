@@ -1,30 +1,42 @@
-require('dotenv').config();
-import express, { Application, Request, Response, NextFunction } from 'express';
-import passport from 'passport';
-import cookieSession from 'cookie-session';
-import cookieParser from 'cookie-parser';
-import authRouter from './routes/auth';
-import projectsRouter from './routes/projects';
-import usersProjectsRouter from './routes/users_projects';
-import tasksRouter from './routes/tasks';
-import usersTasksRouter from './routes/users_tasks';
-import meetingsRouter from './routes/meetings';
-import usersMeetingsRouter from './routes/users_meetings';
-import messagesRouter from './routes/messages';
-import usersRouter from './routes/users';
-import { getLoc, getPersonByGitHub, saveLoc } from './models/person';
-import { socketServer } from './socketServer';
-const cors = require('cors');
+require("dotenv").config();
+import express, { Application, Request, Response, NextFunction } from "express";
+import passport from "passport";
+import cookieSession from "cookie-session";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth";
+import projectsRouter from "./routes/projects";
+import usersProjectsRouter from "./routes/users_projects";
+import tasksRouter from "./routes/tasks";
+import usersTasksRouter from "./routes/users_tasks";
+import meetingsRouter from "./routes/meetings";
+import usersMeetingsRouter from "./routes/users_meetings";
+import messagesRouter from "./routes/messages";
+import usersRouter from "./routes/users";
+import bbbRouter from './routes/bbb'
+import { getLoc, getPersonByGitHub, saveLoc } from "./models/person";
+import { socketServer } from "./socketServer";
+import resourcesRoutes from "./routes/resources";
+const cors = require("cors");
 const app: Application = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5002;
 
-app.use(cors());
-const passportSetup = require('./config/');
+// CORS configuration
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+
+const passportSetup = require("./config/");
 app.use(cookieParser());
 app.use(
   cookieSession({
-    name: 'session',
+    name: "session",
     keys: [process.env.COOKIE_KEY!],
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   })
 );
 
@@ -32,64 +44,72 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/auth', authRouter);
-app.use('/projects', projectsRouter);
-app.use('/users_projects', usersProjectsRouter);
-app.use('/tasks', tasksRouter);
-app.use('/users_tasks', usersTasksRouter);
-app.use('/meetings', meetingsRouter);
-app.use('/users_meetings', usersMeetingsRouter);
-app.use('/messages', messagesRouter);
-app.use('/users', usersRouter);
+app.use("/auth", authRouter);
+app.use("/projects", projectsRouter);
+app.use("/users_projects", usersProjectsRouter);
+app.use("/tasks", tasksRouter);
+app.use("/users_tasks", usersTasksRouter);
+app.use("/meetings", meetingsRouter);
+app.use("/users_meetings", usersMeetingsRouter);
+app.use("/messages", messagesRouter);
+app.use("/users", usersRouter);
+app.use('/bbb', bbbRouter)
+app.use("/resources", resourcesRoutes);
 
 const authCheck = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     res.status(401).json({
       authenticated: false,
-      message: 'user has not been authenticated',
+      message: "user has not been authenticated",
     });
   } else {
     next();
   }
 };
 
-app.get('/', authCheck, (req: Request, res: Response) => {
+app.get("/", authCheck, (req: Request, res: Response) => {
   res.status(200).json({
     authenticated: true,
-    message: 'user successfully authenticated',
+    message: "user successfully authenticated",
     user: req.user,
     cookies: req.cookies,
   });
 });
 
-app.get('/logout', (req: Request, res: Response) => {
+app.get("/logout", (req: Request, res: Response) => {
+  console.log("logging out")
   req.logOut();
-  res.redirect('/login');
+  res.status(200).send("logged out");
+  // res.redirect("/login");
 });
 
-app.get('/user', (req: Request, res: Response) => {
-  if (req.isAuthenticated()) {
-    const reqUser = req.user as any;
-    getPersonByGitHub(reqUser.oauth_id).then((data) => {
-      console.log('user authenticated');
+app.get("/user", authCheck, (req: Request, res: Response) => {
+  const reqUser = req.user as any;
+  console.log("User from session:", reqUser);
 
+  // If user has oauth_id, they logged in with GitHub
+  if (reqUser.oauth_id) {
+    getPersonByGitHub(reqUser.oauth_id).then((data) => {
+      console.log("GitHub user authenticated");
       res.status(200).send(data.rows[0]);
     });
-    return;
+  } else {
+    // Local authentication user - send the user data directly
+    console.log("Local user authenticated");
+    res.status(200).send(reqUser);
   }
-  console.log('Not logged in or not authenticated');
 });
 
-app.post('/loc', (req: Request, res: Response) => {
+app.post("/loc", (req: Request, res: Response) => {
   if (req.isAuthenticated()) {
     const reqUser = req.user as any;
     const loc: string = req.body.loc;
     saveLoc(reqUser.oauth_id, loc).then((data) => {
-      res.status(200).send('saved');
+      res.status(200).send("saved");
     });
     return;
   }
-  res.status(401).send('not authenticated');
+  res.status(401).send("not authenticated");
 });
 
 interface LocData {
@@ -105,7 +125,7 @@ interface UserLoc extends OtherLoc {
   name: string;
 }
 
-app.get('/loc', (req: Request, res: Response) => {
+app.get("/loc", (req: Request, res: Response) => {
   if (req.isAuthenticated()) {
     const reqUser = req.user as any;
     const githubId = reqUser.oauth_id;
@@ -114,7 +134,7 @@ app.get('/loc', (req: Request, res: Response) => {
         user: {
           lat: 0,
           lng: 0,
-          name: '',
+          name: "",
         },
         others: [],
       };
@@ -135,7 +155,7 @@ app.get('/loc', (req: Request, res: Response) => {
     });
     return;
   }
-  res.status(401).send('not authenticated');
+  res.status(401).send("not authenticated");
 });
 
 app.listen(port, () => {

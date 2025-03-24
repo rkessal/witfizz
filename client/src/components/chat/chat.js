@@ -7,17 +7,23 @@ import {
   SEND_DIRECT,
   CLEAR_INCOMING,
   TOGGLE_GIF_SEARCH_OPEN,
+  JOIN_BBB_MEETING,
+  TOGGLE_MODAL_CAN_OPEN,
+  SET_MAP_GUIDE,
 } from '../../reducers/mapReducer';
 import './chat.css';
 import { FaClipboardList } from 'react-icons/fa';
+import axios from 'axios';
 function Chat({ canOpen }) {
   const [chatboxShow, setChatboxShow] = useState(false);
   const [showGif, setShowGif] = useState(false);
   const [receiver, setReceiver] = useState('Everyone');
   const [showInstruction, setShowInstruction] = useState(false);
+  const [nearPlayer, setNearPlayerPopup] = useState(false);
   const dispatch = useDispatch();
   const { width, height, topMargin, leftMargin } = useWindowDimensions();
   const userId = useSelector((state) => state.user.id);
+  const userName = useSelector(state => state.user.name)
   const playersArr = useSelector((state) => state.players);
   const incomingGifState = useSelector((state) => state.incomingGif);
   const onlineUsers = useSelector((state) => state.players);
@@ -39,6 +45,24 @@ function Chat({ canOpen }) {
   const toggleInstruction = () => {
     setShowInstruction(!showInstruction);
   };
+  const toggleNearPlayerPopup = () => {
+    setNearPlayerPopup(prev => !prev)
+  }
+
+  const joinMeeting = async ({ guestId }) => {
+    const sortedIds = [guestId, userId].sort();
+    const meetingID = sortedIds.join('-');
+
+    const response = await axios.post('bbb/join-room', {
+      fullName: userName,
+      meetingID,
+      role: 'VIEWER'
+    })
+
+    dispatch(JOIN_BBB_MEETING(response.data.url))
+    dispatch(SET_MAP_GUIDE({actionAsset: 'call'}))
+    setNearPlayerPopup(false)
+  }
   const userArr = [];
   for (let key in onlineUsers) {
     userArr.push(onlineUsers[key].name);
@@ -51,8 +75,60 @@ function Chat({ canOpen }) {
     );
   });
 
+  const isNearPlayer = Object.keys(playersArr[userId].nearPlayer).length > 0
+
   return (
     <>
+      {canOpen && isNearPlayer && (
+        <button
+          className="nes-btn is-primary"
+          onClick={toggleNearPlayerPopup}
+          style={{
+            zIndex: 21,
+            position: 'absolute',
+            left: `${width - leftMargin - 255}px`,
+            top: `${topMargin + 230}px`,
+            width: '186px',
+            height: '39px',
+            paddingLeft: '3px',
+          }}>
+          Chat
+        </button>
+      )}
+      {canOpen && nearPlayer && (
+        <div
+          className="nes-container is-rounded is-dark"
+          style={{
+            position: 'absolute',
+            left: `${(width - 375) / 2}px`, //keep instruction window centered
+            top: `${(height - 200) / 2}px`,
+            width: '375px',
+            height: '200px',
+            margin: '0 15px 0',
+          }}>
+          <div style={{ display: 'flex', 'justify-content': 'space-between' }}>
+            <h2
+              style={{
+                zIndex: '1',
+                color: 'white',
+              }}>
+              Chat
+            </h2>
+            <section className="icon-list">
+              <i
+                style={{ backgroundColor: 'white' }}
+                className="nes-icon close is-small nes-pointer"
+                onClick={toggleNearPlayerPopup}></i>
+            </section>
+          </div>
+          <p>Do you want to chat with: </p>
+          <ul>
+            {Object.keys(playersArr[userId].nearPlayer).map(id => (
+              <li key={id} onClick={() => joinMeeting({guestId: id})}>{playersArr[id].name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* ---Instruction--- */}
       {canOpen && (
         <button
@@ -154,7 +230,6 @@ function Chat({ canOpen }) {
           onKeyPressCapture={(e) => {
             if (e.code === 'Space') {
               e.stopPropagation();
-              console.log(e.isPropagationStopped());
             }
           }}>
           <div style={{ display: 'flex', 'justify-content': 'space-between' }}>

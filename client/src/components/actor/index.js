@@ -7,6 +7,7 @@ import {
 import './actor.css';
 import { useSelector } from 'react-redux';
 import useMapGuide from './../../hooks/useMapGuide';
+import { useEffect } from 'react';
 
 export default function Actor({
   sprite,
@@ -16,6 +17,9 @@ export default function Actor({
   displayName,
 }) {
   const { playerNearGuide } = useMapGuide();
+
+  useEffect(() => {
+  }, [position.x, position.y])
   const { h, w } = spriteDimensions;
   const opacityStyle = { opacity: '0.5' };
   let styleForDisplayName = {

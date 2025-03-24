@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 
-import { basemapWidth, basemapHeight, navBarHeight } from '../utils/constants';
-function getWindowDimensions() {
+import { MAPS_DATA, navBarHeight } from '../utils/constants';
+import { useSelector } from 'react-redux';
+function getWindowDimensions({ baseWidth, baseHeight}) {
   const { innerWidth: width, innerHeight: height } = window;
   let left, top;
-  if (width < basemapWidth) {
+  if (width < baseWidth) {
     left = 0;
   } else {
-    left = (width - basemapWidth) / 2;
+    left = (width - baseWidth) / 2;
   }
-  if (height < basemapHeight + navBarHeight) {
+  if (height < baseHeight + navBarHeight) {
     top = navBarHeight;
   } else {
-    top = (height - basemapHeight - navBarHeight) / 2 + navBarHeight;
+    top = (height - baseHeight - navBarHeight) / 2 + navBarHeight;
   }
   return {
     leftMargin: left,
@@ -23,13 +24,14 @@ function getWindowDimensions() {
 }
 
 export default function useWindowDimensions() {
+  const currentMap = useSelector((state) => MAPS_DATA[state.currentMap]);
   const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions()
+    getWindowDimensions({baseWidth: currentMap.width, baseHeight: currentMap.height})
   );
 
   useEffect(() => {
     function handleResize() {
-      setWindowDimensions(getWindowDimensions());
+      setWindowDimensions(getWindowDimensions({baseWidth: currentMap.width, baseHeight: currentMap.height}));
     }
 
     window.addEventListener('resize', handleResize);

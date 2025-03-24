@@ -1,19 +1,20 @@
 import { createReducer, createAction } from '@reduxjs/toolkit';
 import {
-  directions,
   modifier,
   maxSteps,
   playerTemplate,
+  MAPS_DATA
 } from '../utils/constants';
-import { initX, initY } from '../utils/constants';
 
 const initialState = {
   localID: 'local',
   localSocketId: null,
+  currentMap: 'main',
   user: {
     id: '', //id_from_db
     name: '',
     avatar: '',
+    role: '',
   },
   players: {
     // [id_from_db]: {
@@ -28,8 +29,12 @@ const initialState = {
     //   socketId: "20digitsofnonesense"
     // },
   },
+  bbbMeeting: {
+    url: ''
+  },
   mapGuide: {
     userDashboard: false,
+    bbbMeeting: false,
     projectDashboard: false,
     kanban: false,
     ganttChart: false,
@@ -42,10 +47,13 @@ const initialState = {
     globe: false,
     reception: false,
     win98: false,
+    library: false,
+    meeting: false,
   },
   mapRoute: {
     modalCanOpen: false,
     routeName: null,
+    data: null
   },
   video: {
     localSocketId: '',
@@ -86,12 +94,16 @@ export const RECEIVED_ANNOUNCEMENT = createAction('RECEIVED_ANNOUNCEMENT');
 export const SEND_DIRECT = createAction('SEND_DIRECT');
 export const RECEIVE_DIRECT = createAction('RECEIVE_DIRECT');
 export const CLEAR_INCOMING = createAction('CLEAR_INCOMING');
+export const JOIN_BBB_MEETING = createAction('JOIN_BBB_MEETING');
+export const LEAVE_BBB_MEETING = createAction('LEAVE_BBB_MEETING');
+export const TELEPORT_TO_MAP = createAction('TELEPORT_TO_MAP');
 
 export const mapReducer = createReducer(initialState, (builder) => {
   //SET_USER: save user in global state and init meeting room rendering params
   builder.addCase(SET_USER, (state, action) => {
     state.user.name = action.payload.name;
     state.user.avatar = action.payload.avatar;
+    state.user.role = action.payload.role;
     const id = action.payload.id;
     state.localID = id;
     state.user.id = id;
@@ -133,6 +145,39 @@ export const mapReducer = createReducer(initialState, (builder) => {
     state.players[id].dir = newDir ? newDir : state.players[id].dir;
     state.players[id].step = newStep;
     state.players[id].socketId = state.localSocketId;
+
+    Object.keys(state.players).forEach(key => {
+      console.log('prox')
+      if (state.players[key].id === id) {
+        return; 
+      }
+  
+      const currentPlayer = state.players[id];
+      const otherPlayer = state.players[key];
+  
+      const dx = Math.abs(currentPlayer.x - otherPlayer.x);
+      const dy = Math.abs(currentPlayer.y - otherPlayer.y);
+  
+      const proxThreshold = 10;
+      const isClose = dx <= proxThreshold && dy <= proxThreshold;
+      const isSameMap = currentPlayer.currentMap === otherPlayer.currentMap;
+      console.log(isClose, currentPlayer)
+  
+      const isFacingEachOther = true;
+      // const isFacingEachOther =
+      //   (currentPlayer.dir === 'up' && otherPlayer.dir === 'down') ||
+      //   (currentPlayer.dir === 'down' && otherPlayer.dir === 'up') ||
+      //   (currentPlayer.dir === 'left' && otherPlayer.dir === 'right') ||
+      //   (currentPlayer.dir === 'right' && otherPlayer.dir === 'left');
+  
+      if (isClose && isFacingEachOther && isSameMap) {
+        currentPlayer.nearPlayer[otherPlayer.id] = true
+        otherPlayer.nearPlayer[currentPlayer.id] = true
+      } else {
+        delete currentPlayer.nearPlayer[otherPlayer.id]
+        delete otherPlayer.nearPlayer[currentPlayer.id]
+      }
+    });
     return state;
   });
 
@@ -153,8 +198,10 @@ export const mapReducer = createReducer(initialState, (builder) => {
   });
 
   builder.addCase(SET_MAP_GUIDE, (state, action) => {
+    console.log(action.payload)
     state.mapGuide[action.payload.actionAsset] = true;
     state.mapRoute.routeName = action.payload.actionAsset;
+    state.mapRoute.data = action.payload.actionData;
   });
   builder.addCase(HIDE_MAP_GUIDE, (state, action) => {
     for (let key in state.mapGuide) {
@@ -162,6 +209,7 @@ export const mapReducer = createReducer(initialState, (builder) => {
     }
     state.mapRoute.modalCanOpen = false;
     state.mapRoute.routeName = null;
+    state.mapRoute.data = null;
   });
 
   builder.addCase(TOGGLE_MODAL_CAN_OPEN, (state, action) => {
@@ -238,5 +286,25 @@ export const mapReducer = createReducer(initialState, (builder) => {
     state.incomingGif.senderAvatar = '';
     state.incomingGif.gifObj = null;
     state.incomingGif.receiverName = '';
+  });
+  builder.addCase(JOIN_BBB_MEETING, (state, action) => {
+    state.mapGuide.bbbMeeting = true
+    state.bbbMeeting.url = action.payload
+    state.mapRoute.modalCanOpen = true
+  })
+  builder.addCase(LEAVE_BBB_MEETING, (state, action) => {
+    state.mapGuide.bbbMeeting = false
+    state.bbbMeeting.url = ''
+  })
+  builder.addCase(TELEPORT_TO_MAP, (state, action) => {
+    const id = state.localID;
+    const map = action.payload;
+    const { spawnPoint, name } = MAPS_DATA[map];
+    state.players[id].x = spawnPoint.x;
+    state.players[id].y = spawnPoint.y;
+    state.players[id].dir = spawnPoint.dir;
+    state.players[id].step = 0;
+    state.players[id].currentMap = name;
+    state.currentMap = name;
   });
 });

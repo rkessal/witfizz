@@ -1,25 +1,75 @@
 require('dotenv').config();
 import passport from 'passport';
 import camelcaseKeys from 'camelcase-keys';
-import GitHubStrategy from 'passport-github2';
+import { Strategy as GitHubStrategy } from 'passport-github2';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt';
 import * as userDb from '../models/person';
+import pool from '../db/dbConfig';
+
+// Extend Express User type
+declare global {
+  namespace Express {
+    interface User {
+      id: number;
+      email: string;
+      password: string;
+      name: string;
+      avatar?: string;
+      role: string;
+    }
+  }
+}
 
 // serialize the user.id to save in the cookie session
 // so the browser will remember the user when login
-passport.serializeUser((user, done) => {
-  done(null, (user as any).oauth_id);
+passport.serializeUser((user: Express.User, done) => {
+  done(null, user.id);
 });
 
 // deserialize the cookieUserId to user in the database
 passport.deserializeUser(async (id: number, done) => {
   try {
-    const user = await userDb.getPersonByGitHub(id);
-    done(null, user.rows[0]);
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    done(null, result.rows[0]);
   } catch (e) {
     done(new Error('Failed to deserialize an user'));
   }
 });
 
+// Local Strategy
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+    },
+    async (email: string, password: string, done: any) => {
+      try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = result.rows[0];
+
+        if (!user) {
+          console.log('incorrect email')
+          return done(null, false, { message: 'Incorrect email.' });
+        }
+
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+          console.log('incorrect password')
+          return done(null, false, { message: 'Incorrect password.' });
+        }
+
+        return done(null, user);
+      } catch (error) {
+        console.log(error)
+        return done(error);
+      }
+    }
+  )
+);
+
+// GitHub Strategy
 passport.use(
   //@ts-ignore
   new GitHubStrategy(

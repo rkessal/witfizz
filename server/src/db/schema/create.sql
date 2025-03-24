@@ -8,14 +8,18 @@ DROP TABLE IF EXISTS users_tasks CASCADE;
 DROP TABLE IF EXISTS meetings CASCADE;
 DROP TABLE IF EXISTS users_meetings CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS resources CASCADE;
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY NOT NULL,
   name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE,
+  password VARCHAR(255),
   avatar VARCHAR(255),
   total_experience INT DEFAULT 0,
   lat DOUBLE PRECISION,
-  lng DOUBLE PRECISION  
+  lng DOUBLE PRECISION,
+  role VARCHAR(50) CHECK (role IN ('teacher', 'student', 'admin'))
 );
 
 CREATE TABLE oauth_mapping (
@@ -95,5 +99,14 @@ CREATE TABLE messages (
   message TEXT NOT NULL,
   sender_id INT REFERENCES users(id),
   receiver_id INT REFERENCES users(id)
+);
+
+CREATE TABLE resources (
+  id SERIAL PRIMARY KEY NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  link VARCHAR(255) NOT NULL,
+  created_by INT REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

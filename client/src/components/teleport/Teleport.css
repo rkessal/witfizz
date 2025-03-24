@@ -1,0 +1,25 @@
+.teleport-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.teleport-container h2 {
+  margin-bottom: 30px;
+  font-size: 1.5em;
+}
+
+.teleport-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.teleport-buttons .nes-btn {
+  min-width: 100px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+} 

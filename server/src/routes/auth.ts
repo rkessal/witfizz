@@ -5,6 +5,7 @@ const router = express.Router();
 
 import * as controller from "../controllers/auth";
 
+// GitHub OAuth routes
 router.get("/login/success", controller.loginSuccess);
 router.get("/login/failed", controller.loginFail);
 router.get(
@@ -18,5 +19,12 @@ router.get(
     successRedirect: process.env.CLIENT_URL,
   })
 );
+
+// Local authentication routes
+router.post("/register", controller.register);
+router.post("/login", passport.authenticate("local", {
+  successRedirect: process.env.CLIENT_URL,
+  failureRedirect: "/login",
+}));
 
 export default router;

@@ -15,6 +15,7 @@ import UserDashboard from './userDashboard/UserDashboard';
 import TaskTable from './tasks/TaskTable';
 import Kanban from './kanban/Kanban';
 import GanttChart from './gantt-chart/GanttChart';
+import MapEditor from '../pages/MapEditor';
 
 const Sidenav = () => {
   return (
@@ -43,6 +44,9 @@ const Sidenav = () => {
         </Route>
         <Route path='/gantt' exact>
           <GanttChart></GanttChart>
+        </Route>
+        <Route path='/map-edit' exact>
+          <MapEditor />
         </Route>
         {/* <Route path="/login" exact>
           <Login></Login>

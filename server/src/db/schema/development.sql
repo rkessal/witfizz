@@ -1,14 +1,14 @@
-INSERT INTO users(name, avatar, lat, lng)
+INSERT INTO users(name, email, password, avatar, lat, lng, role)
 VALUES
-  ('Johnny', 'https://i.imgur.com/31MtvRN.png', 115.4378133,-8.5435824),
-  ('Carrie', 'https://i.imgur.com/qn5TFDx.png', -123.2276101,49.2568524),
-  ('Jose', 'https://i.imgur.com/31MtvRN.png', 2.2768478,48.8588376),
-  ('David', 'https://i.imgur.com/31MtvRN.png', 39, 6),
-  ('Amanda', 'https://i.imgur.com/qn5TFDx.png', 55, 23),
-  ('Matthew', 'https://i.imgur.com/31MtvRN.png', 78, 20),
-  ('Lydia Miller-Jones', 'https://i.imgur.com/qn5TFDx.png', 33, 45),
-  ('Archie', 'https://i.imgur.com/31MtvRN.png', 0, 0),
-  ('Justin', 'https://i.imgur.com/31MtvRN.png', 120, 49);
+  ('Johnny', 'johnny@example.com', '$2b$10$YourHashedPasswordHere', 'https://i.imgur.com/31MtvRN.png', 115.4378133,-8.5435824, 'teacher'),
+  ('Carrie', 'carrie@example.com', 'https://i.imgur.com/qn5TFDx.png', '$2b$10$YourHashedPasswordHere',-123.2276101,49.2568524, 'student'),
+  ('Jose', 'jose@example.com', 'https://i.imgur.com/31MtvRN.png', '$2b$10$YourHashedPasswordHere', 2.2768478,48.8588376, 'student'),
+  ('David', 'david@example.com', 'https://i.imgur.com/31MtvRN.png', '$2b$10$YourHashedPasswordHere', 39, 6, 'student'),
+  ('Amanda', 'amanda@example.com', 'https://i.imgur.com/qn5TFDx.png', '$2b$10$YourHashedPasswordHere', 55, 23, 'teacher'),
+  ('Matthew', 'matthew@example.com', 'https://i.imgur.com/31MtvRN.png', '$2b$10$YourHashedPasswordHere', 78, 20, 'student'),
+  ('Lydia Miller-Jones', 'lydia@example.com', 'https://i.imgur.com/qn5TFDx.png', '$2b$10$YourHashedPasswordHere', 33, 45, 'student'),
+  ('Archie', 'archie@example.com', 'https://i.imgur.com/31MtvRN.png', '$2b$10$YourHashedPasswordHere', 0, 0, 'student'),
+  ('Justin', 'justin@example.com', 'https://i.imgur.com/31MtvRN.png', '$2b$10$YourHashedPasswordHere', 120, 49, 'student');
 
 INSERT INTO projects (creator_id, name, description, start_date, end_date, background_img)
 VALUES

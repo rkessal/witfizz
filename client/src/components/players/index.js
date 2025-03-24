@@ -9,7 +9,12 @@ import {
   SET_MAP_GUIDE,
   TOGGLE_MODAL_CAN_OPEN,
 } from '../../reducers/mapReducer';
-import { directions } from '../../utils/constants';
+import { 
+  directions, 
+  viewportWidth,
+  viewportHeight,
+  MAPS_DATA,
+} from '../../utils/constants';
 import checkNextTile from '../../utils/checkNextTile';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 
@@ -19,7 +24,7 @@ export default function Players({ socket }) {
   const localUserState = useSelector((state) => {
     return state.players[state.localID];
   });
-
+  const currentMap = useSelector((state) => MAPS_DATA[state.currentMap]);
   const playerListState = useSelector((state) => {
     return state.players;
   });
@@ -28,29 +33,51 @@ export default function Players({ socket }) {
   });
   const dispatch = useDispatch();
 
+  // Calculate camera position - center on player
+  const cameraX = Math.max(
+    Math.min(
+      -(localUserState?.x || 0) + viewportWidth / 2,
+      0
+    ),
+    -(currentMap.width - viewportWidth)
+  );
+  const cameraY = Math.max(
+    Math.min(
+      -(localUserState?.y || 0) + viewportHeight / 2,
+      0
+    ),
+    -(currentMap.height - viewportHeight)
+  );
+
   function walk(dir) {
-    if (checkNextTile(dir, localUserState.x, localUserState.y)['action']) {
+    if (checkNextTile(dir, localUserState.x, localUserState.y, currentMap.table)['action']) {
       const actionAsset = checkNextTile(
         dir,
         localUserState.x,
-        localUserState.y
+        localUserState.y,
+        currentMap.table
       )['asset'];
-      dispatch(SET_MAP_GUIDE({ actionAsset }));
+      const actionData = checkNextTile(
+        dir,
+        localUserState.x,
+        localUserState.y,
+        currentMap.table
+      )['data'];
+      dispatch(SET_MAP_GUIDE({ actionAsset, actionData }));
     } else {
       dispatch(HIDE_MAP_GUIDE());
     }
-    if (checkNextTile(dir, localUserState.x, localUserState.y)['walk']) {
+    if (checkNextTile(dir, localUserState.x, localUserState.y, currentMap.table)['walk']) {
       dispatch(WALK({ dir, id: localIdState }));
       return {
         type: 'WALK',
         payload: JSON.stringify(localUserState),
       };
     }
-    dispatch(WALK_IN_PLACE({ dir, id: localIdState })); //this action is NOT broadcasted
+    dispatch(WALK_IN_PLACE({ dir, id: localIdState }));
   }
 
   useKeyPress((e) => {
-    // e.preventDefault();
     if (
       e.key === 'ArrowDown' ||
       e.key === 'ArrowUp' ||
@@ -65,15 +92,15 @@ export default function Players({ socket }) {
     }
   });
 
-  const playerListArr = Object.keys(playerListState).map((key) => (
+  const playerListArr = Object.keys(playerListState).filter((key) => playerListState[key]['currentMap'] === currentMap.name).map((key) => (
     <Actor
       key={key}
       sprite={`/sprites/skins/${playerListState[key]['skin']}.png`}
       dir={directions[playerListState[key]['dir']]}
       step={playerListState[key]['step']}
       position={{
-        x: playerListState[key]['x'] + leftMargin,
-        y: playerListState[key]['y'] + topMargin,
+        x: playerListState[key]['x'] + leftMargin + cameraX,
+        y: playerListState[key]['y'] + topMargin + cameraY,
       }}
       displayName={playerListState[key]['name']}
     />

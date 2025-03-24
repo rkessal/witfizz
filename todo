@@ -1,0 +1,11 @@
+constants.js
+- Move map tables to json files
+
+map-editor
+- add moving NPCs
+- add configurable teleports
+- add a way to add a new map from scratch (using json files and upload to /maps)
+
+- remove github / create accounts from witfizz interface
+- dockerize
+- refactor
