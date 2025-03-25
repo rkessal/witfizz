@@ -6,7 +6,7 @@ services:
       context: ./client
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "81:81"
     environment:
       - NODE_ENV=production
     env_file:
