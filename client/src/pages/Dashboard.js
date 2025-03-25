@@ -9,12 +9,8 @@ import MainModal from '../components/modal/MainModal';
 import useMapGuide from './../hooks/useMapGuide';
 import MainNav from '../components/MainNav';
 import { SET_USER } from '../reducers/mapReducer';
-import axios from 'axios';
+import axios from '../config/axios';
 
-//@todo: move to config
-axios.defaults.baseURL = `http://localhost:5002`;
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 const Dashboard = () => {
   const { playerNearGuide } = useMapGuide();

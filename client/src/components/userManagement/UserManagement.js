@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
+import axios from '../../config/axios';
 import './UserManagement.css';
-import { SET_USER } from '../../reducers/mapReducer';
-
-axios.defaults.baseURL = `http://localhost:5002`;
-// axios.defaults.withCredentials = true;
 
 const UserManagement = () => {
   const userRole = useSelector((state) => state.user.role);

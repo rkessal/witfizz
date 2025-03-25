@@ -5,7 +5,7 @@ import '../styles/animations.css';
 import './bbb-meeting.css';
 import { useState, useEffect } from 'react';
 // import {useApplicationData} from '../hooks/useApplicationData.js'
-import axios from 'axios';
+import axios from '../../config/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { JOIN_BBB_MEETING, LEAVE_BBB_MEETING } from '../../reducers/mapReducer';
 import Modal from "react-modal";

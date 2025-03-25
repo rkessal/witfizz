@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./client
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./client/.env
+    environment:
+      - WDS_SOCKET_PORT=0
+    depends_on:
+      - backend
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+  backend:
+    build:
+      context: ./server
+      args:
+        - NODE_ENV=${NODE_ENV:-development}
+    ports:
+      - "5002:5002"
+      - "5080:5080"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - db
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  db:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./server/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/src/db/schema:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:

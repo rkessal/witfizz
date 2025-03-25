@@ -1,5 +1,5 @@
 import { createContext, useReducer, useEffect } from "react";
-import axios from "axios";
+import axios from "../../config/axios";
 import applicationDataReducer, {
   SET_APPLICATION_DATA,
   SET_CURRENT_PROJECT,

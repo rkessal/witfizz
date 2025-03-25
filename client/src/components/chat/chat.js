@@ -13,7 +13,7 @@ import {
 } from '../../reducers/mapReducer';
 import './chat.css';
 import { FaClipboardList } from 'react-icons/fa';
-import axios from 'axios';
+import axios from '../../config/axios';
 function Chat({ canOpen }) {
   const [chatboxShow, setChatboxShow] = useState(false);
   const [showGif, setShowGif] = useState(false);

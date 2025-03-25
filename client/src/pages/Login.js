@@ -61,6 +61,7 @@ const Login = () => {
     }
   };
 
+
   const userState = useSelector((state) => {
     console.log("state:", state);
     return state.user;
@@ -70,12 +71,12 @@ const Login = () => {
   return (
     <div className="background">
       <div className="login-container">
-        <div className="login">
+        {/* <div className="login">
           <BsGithub className="github" />
           <a href={process.env.REACT_APP_GITHUB_LOGIN}>
             {" Log in with Github"}
           </a>
-        </div>
+        </div> */}
 
         <div className="login-form">
           <h2>{isRegistering ? "Inscription" : "Connexion"}</h2>
