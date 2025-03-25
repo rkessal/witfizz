@@ -18,22 +18,30 @@ COPY . .
 
 # Set NODE_ENV for production build
 ENV CI=false
-
+ENV PUBLIC_URL=/workland
 
 # Build the app using react-scripts
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Debug: List contents of build directory
+RUN ls -la build/
+RUN ls -la build/static/
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Production stage - just copy the build files
+FROM alpine:latest
+
+# Create directory for static files
+RUN mkdir -p /app/build
 
 # Copy built files from builder stage
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/build /app/build
 
 # Expose port
-EXPOSE 80
+EXPOSE 5001
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Use a simple HTTP server to serve the files
+RUN apk add --no-cache nodejs npm
+RUN npm install -g serve
+
+# Start the server
+CMD ["serve", "-s", "build", "-l", "5001"] 
