@@ -18,7 +18,7 @@ const store = configureStore({
 global.Buffer = Buffer;
 
 ReactDOM.render(
-  <BrowserRouter>
+  <BrowserRouter basename="/workland">
     <Provider store={store}>
       <App />
     </Provider>
