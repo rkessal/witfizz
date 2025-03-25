@@ -22,7 +22,7 @@ const port = process.env.PORT || 5002;
 
 // CORS configuration
 app.use(cors({
-  origin: [process.env.CLIENT_URL || 'http://localhost:5001'],
+  origin:  '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
@@ -158,8 +158,12 @@ app.get("/loc", (req: Request, res: Response) => {
   res.status(401).send("not authenticated");
 });
 
-app.listen(port, () => {
-  console.log(`Backend running on port ${port}🏃`);
+// Start both HTTP and Socket.IO servers
+const server = app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
 
-socketServer.listen(5080);
+// Initialize Socket.IO server
+socketServer.listen(5080, () => {
+  console.log('Socket.IO server is running on port 5080');
+});

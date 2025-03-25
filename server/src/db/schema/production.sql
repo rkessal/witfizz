@@ -1,3 +1,9 @@
+INSERT INTO users(name, email, password, avatar, lat, lng, role)
+VALUES
+  ('Johnny', 'johnny@example.com', '$2b$10$YourHashedPasswordHere', 'https://i.imgur.com/31MtvRN.png', 115.4378133,-8.5435824, 'teacher'),
+  ('Justin', 'justin@example.com','$2b$10$YourHashedPasswordHere', 'https://i.imgur.com/31MtvRN.png', 120, 49, 'student');
+  ('Rayhan', 'kessal.rayhan25@gmail.com', '$2b$10$kTfIFnjo4omeHKWTyUhyeuFInrcxL1oeZbB3qMEl3S3f5DSdbz89W' 'https://i.imgur.com/31MtvRN.png', 120, 49, 'student');
+
 INSERT INTO projects (creator_id, name, description, start_date, end_date, background_img)
 VALUES
   (null, 'Welcome to WorkLand!', 'This is a project to get new users acquainted with WorkLand!', null, null, '');
