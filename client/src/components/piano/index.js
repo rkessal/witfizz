@@ -1,5 +1,3 @@
-import 'react-piano/dist/styles.css';
-
 import './styles.css';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
