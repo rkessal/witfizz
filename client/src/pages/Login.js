@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "./login.css";
 import "./index.css";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_USER } from "../reducers/mapReducer";
 import { BsGithub } from "react-icons/bs";
+import axios from "../config/axios";
 
-// Configure axios defaults
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 const Login = () => {
   const dispatch = useDispatch();
