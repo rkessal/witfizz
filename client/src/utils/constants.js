@@ -1,5 +1,5 @@
 //web socket endpoint(our server)
-export const wsEndpoint = process.env.WS_ENDPOINT || 'ws://localhost:5080';
+export const wsEndpoint = process.env.REACT_APP_WS_ENDPOINT || 'ws://localhost:5080';
 
 export const navBarHeight = 0;
 // viewport size (the visible area)
