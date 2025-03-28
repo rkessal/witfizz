@@ -31,6 +31,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Set-Cookie']
 }));
+app.use(express.json());
 
 console.log(process.env.DOMAIN)
 app.use(cookieParser());
@@ -39,8 +40,9 @@ app.use(
     name: "session",
     keys: [process.env.COOKIE_KEY!],
     maxAge: 48 * 60 * 60 * 1000, // 48 hours
-    secure: true, // Always use secure in production
-    sameSite: "none", // Required for cross-origin requests
+    secure: process.env.NODE_ENV === 'production', // Only use secure in production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Required for cross-origin requests in production
+    httpOnly: true,
   })
 );
 
@@ -48,7 +50,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 // Add session debugging middleware
-app.use(express.json());
 app.use((req, res, next) => {
   console.log('req.session :>> ', req.session);
   console.log('User:', req.user);

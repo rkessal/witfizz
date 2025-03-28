@@ -44,6 +44,7 @@ services:
       - ./server/src/db/schema/create.sql:/docker-entrypoint-initdb.d/01-create.sql
       # - ./server/src/db/schema/development.sql:/docker-entrypoint-initdb.d/02-development.sql
       - ./server/src/db/schema/production.sql:/docker-entrypoint-initdb.d/03-production.sql
+      - ./server/src/db/schema/sessions.sql:/docker-entrypoint-initdb.d/04-sessions.sql
     networks:
       - app-network
 
