@@ -6,8 +6,10 @@ const io = new Server(socketServer, {
   cors: {
     origin: process.env.CLIENT_URL,
     methods: ["GET", "POST"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   },
-  path: '/socket.io',
+  path: '/workland-socket.io/socket.io',
   allowEIO3: true,
   transports: ['websocket', 'polling']
 });
