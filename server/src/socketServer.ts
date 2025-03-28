@@ -4,11 +4,12 @@ import type { Room, SocketId } from 'socket.io-adapter';
 export const socketServer = createServer();
 const io = new Server(socketServer, {
   cors: {
-    origin: '*',
+    origin: process.env.CLIENT_URL,
     methods: ["GET", "POST"],
   },
-  path: '/workland-socket.io/socket.io',
-  allowEIO3: true  
+  path: '/socket.io',
+  allowEIO3: true,
+  transports: ['websocket', 'polling']
 });
 
 let socketIds: SocketId[] = [];
