@@ -5,16 +5,21 @@ export const socketServer = createServer();
 const io = new Server(socketServer, {
   cors: {
     origin: process.env.CLIENT_URL,
-    methods: ["GET", "POST"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
   },
-  path: '/workland-socket.io/socket.io',
-  allowEIO3: true,
-  transports: ['websocket', 'polling']
+  path: '/workland-socket.io',
 });
 
 let socketIds: SocketId[] = [];
+
+console.log('socketServer :>> ', socketServer);
+
+io.on('connection_error', (error) => {
+  console.log('Connection Error:', error);
+});
+
+io.on('upgrade', (req, socket: any, head: Buffer) => {
+  console.log('Upgrade request:', req.url);
+});
 
 io.on('connection', (socket: Socket) => {
   console.log('.........socket connected.......🙌');

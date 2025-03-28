@@ -11,35 +11,34 @@ export const socketRTK = () => {
   return (storeAPI) => {
     console.log('test')
     const socket = io(wsEndpoint, {
-      path: '/workland-socket.io/socket.io',
-      transports: ['websocket', 'polling'],
-  });
+      path: '/workland-socket.io',
+    });
 
     console.log('test2', socket)
     socket.on('connect_error', (error) => {
       console.log('Connection Error:', error);
     });
-    
+
     socket.on('connect_timeout', (timeout) => {
       console.log('Connection Timeout:', timeout);
     });
-    
+
     socket.on('error', (error) => {
       console.log('Socket Error:', error);
     });
-    
+
     socket.on('disconnect', (reason) => {
       console.log('Disconnected:', reason);
     });
-    
+
     socket.on('reconnect_attempt', (attemptNumber) => {
       console.log('Reconnection Attempt:', attemptNumber);
     });
-    
+
     socket.on('reconnect_error', (error) => {
       console.log('Reconnection Error:', error);
     });
-    
+
     socket.on('reconnect_failed', () => {
       console.log('Reconnection Failed');
     });
