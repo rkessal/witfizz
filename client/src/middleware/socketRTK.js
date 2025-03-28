@@ -9,8 +9,12 @@ import {
 } from '../reducers/mapReducer';
 export const socketRTK = () => {
   return (storeAPI) => {
-    const socket = io(wsEndpoint, { path: '/workland-socket.io' });
+    console.log('test')
+    const socket = io(wsEndpoint, { path: '/workland-socket.io/socket.io' });
+    console.log('test2', socket)
     socket.on('connect', () => {
+      console.log('Client attempting to connect');
+      console.log('Socket ID:', socket.id);
       storeAPI.dispatch(SET_SOCKETID({ id: socket.id }));
     });
 

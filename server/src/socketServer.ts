@@ -5,8 +5,10 @@ export const socketServer = createServer();
 const io = new Server(socketServer, {
   cors: {
     origin: '*',
-    // method: ["GET", "POST"],
+    methods: ["GET", "POST"],
   },
+  path: '/workland-socket.io/socket.io',
+  allowEIO3: true  
 });
 
 let socketIds: SocketId[] = [];
