@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import passport from "passport";
 
 const router = express.Router();
@@ -22,9 +22,22 @@ router.get(
 
 // Local authentication routes
 router.post("/register", controller.register);
-router.post("/login", passport.authenticate("local", {
-  successRedirect: process.env.CLIENT_URL,
-  failureRedirect: "/login",
-}));
+router.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      console.log(req.cookies)
+      return res.json({ user });
+    });
+  })(req, res, next);
+});
 
 export default router;

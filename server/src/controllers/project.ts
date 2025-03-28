@@ -6,6 +6,12 @@ import * as user_project_model from "../models/user_project";
 
 async function getProjects(req: Request, res: Response) {
   const user = req.user as any;
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: "User not authenticated",
+    });
+  }
 
   const queryResult = await model.getAllProjects(user.id);
   res.send(queryResult.rows.map((row: String) => camelcaseKeys(row)));

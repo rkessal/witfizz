@@ -11,7 +11,6 @@ const io = new Server(socketServer, {
 
 let socketIds: SocketId[] = [];
 
-console.log('socketServer :>> ', socketServer);
 
 io.on('connection_error', (error) => {
   console.log('Connection Error:', error);

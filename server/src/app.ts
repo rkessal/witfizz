@@ -1,3 +1,4 @@
+require("./config/");
 require("dotenv").config();
 import express, { Application, Request, Response, NextFunction } from "express";
 import passport from "passport";
@@ -20,29 +21,40 @@ const cors = require("cors");
 const app: Application = express();
 const port = process.env.PORT || 5002;
 
+app.set('trust proxy', 1);
+
 // CORS configuration
 app.use(cors({
-  origin:  process.env.CLIENT_URL,
+  origin: process.env.CLIENT_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Set-Cookie']
 }));
 
-const passportSetup = require("./config/");
+console.log(process.env.DOMAIN)
 app.use(cookieParser());
 app.use(
   cookieSession({
     name: "session",
     keys: [process.env.COOKIE_KEY!],
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    maxAge: 48 * 60 * 60 * 1000, // 48 hours
+    secure: true, // Always use secure in production
+    sameSite: "none", // Required for cross-origin requests
   })
 );
 
-app.use(express.json());
+// Initialize passport before session
 app.use(passport.initialize());
 app.use(passport.session());
+// Add session debugging middleware
+app.use(express.json());
+app.use((req, res, next) => {
+  console.log('req.session :>> ', req.session);
+  console.log('User:', req.user);
+  console.log('Cookies:', req.cookies);
+  next();
+});
 
 app.use("/auth", authRouter);
 app.use("/projects", projectsRouter);
