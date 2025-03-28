@@ -12,6 +12,7 @@ export const socketRTK = () => {
     console.log('test')
     const socket = io(wsEndpoint, {
       path: '/workland-socket.io/socket.io',
+      transports: ['websocket', 'polling'],
   });
 
     console.log('test2', socket)
