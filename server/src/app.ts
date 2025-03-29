@@ -2,7 +2,6 @@ require("./config/");
 require("dotenv").config();
 import express, { Application, Request, Response, NextFunction } from "express";
 import passport from "passport";
-import cookieSession from "cookie-session";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth";
 import projectsRouter from "./routes/projects";
@@ -17,6 +16,7 @@ import bbbRouter from './routes/bbb'
 import { getLoc, getPersonByGitHub, saveLoc } from "./models/person";
 import { socketServer } from "./socketServer";
 import resourcesRoutes from "./routes/resources";
+import { verifyToken } from "./middleware/auth";
 const cors = require("cors");
 const app: Application = express();
 const port = process.env.PORT || 5002;
@@ -32,73 +32,29 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie']
 }));
 app.use(express.json());
-
-console.log(process.env.DOMAIN)
 app.use(cookieParser());
-app.use(
-  cookieSession({
-    name: "session",
-    keys: [process.env.COOKIE_KEY!],
-    maxAge: 48 * 60 * 60 * 1000, // 48 hours
-    secure: process.env.NODE_ENV === 'production', // Only use secure in production
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Required for cross-origin requests in production
-    httpOnly: true,
-  })
-);
 
-// Initialize passport before session
+// Initialize passport
 app.use(passport.initialize());
-app.use(passport.session());
-// Add session debugging middleware
-app.use((req, res, next) => {
-  console.log('req.session :>> ', req.session);
-  console.log('User:', req.user);
-  console.log('Cookies:', req.cookies);
-  next();
-});
 
+// Routes that don't require authentication
 app.use("/auth", authRouter);
-app.use("/projects", projectsRouter);
-app.use("/users_projects", usersProjectsRouter);
-app.use("/tasks", tasksRouter);
-app.use("/users_tasks", usersTasksRouter);
-app.use("/meetings", meetingsRouter);
-app.use("/users_meetings", usersMeetingsRouter);
-app.use("/messages", messagesRouter);
-app.use("/users", usersRouter);
-app.use('/bbb', bbbRouter)
-app.use("/resources", resourcesRoutes);
 
-const authCheck = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user) {
-    res.status(401).json({
-      authenticated: false,
-      message: "user has not been authenticated",
-    });
-  } else {
-    next();
-  }
-};
+// Protected routes
+app.use("/projects", verifyToken, projectsRouter);
+app.use("/users_projects", verifyToken, usersProjectsRouter);
+app.use("/tasks", verifyToken, tasksRouter);
+app.use("/users_tasks", verifyToken, usersTasksRouter);
+app.use("/meetings", verifyToken, meetingsRouter);
+app.use("/users_meetings", verifyToken, usersMeetingsRouter);
+app.use("/messages", verifyToken, messagesRouter);
+app.use("/users", verifyToken, usersRouter);
+app.use('/bbb', verifyToken, bbbRouter);
+app.use("/resources", verifyToken, resourcesRoutes);
 
-app.get("/", authCheck, (req: Request, res: Response) => {
-  res.status(200).json({
-    authenticated: true,
-    message: "user successfully authenticated",
-    user: req.user,
-    cookies: req.cookies,
-  });
-});
-
-app.get("/logout", (req: Request, res: Response) => {
-  console.log("logging out")
-  req.logOut();
-  res.status(200).send("logged out");
-  // res.redirect("/login");
-});
-
-app.get("/user", authCheck, (req: Request, res: Response) => {
+app.get("/user", verifyToken, (req: Request, res: Response) => {
   const reqUser = req.user as any;
-  console.log("User from session:", reqUser);
+  console.log("User from token:", reqUser);
 
   // If user has oauth_id, they logged in with GitHub
   if (reqUser.oauth_id) {
@@ -113,16 +69,12 @@ app.get("/user", authCheck, (req: Request, res: Response) => {
   }
 });
 
-app.post("/loc", (req: Request, res: Response) => {
-  if (req.isAuthenticated()) {
-    const reqUser = req.user as any;
-    const loc: string = req.body.loc;
-    saveLoc(reqUser.oauth_id, loc).then((data) => {
-      res.status(200).send("saved");
-    });
-    return;
-  }
-  res.status(401).send("not authenticated");
+app.post("/loc", verifyToken, (req: Request, res: Response) => {
+  const reqUser = req.user as any;
+  const loc: string = req.body.loc;
+  saveLoc(reqUser.oauth_id, loc).then((data) => {
+    res.status(200).send("saved");
+  });
 });
 
 interface LocData {
@@ -138,37 +90,32 @@ interface UserLoc extends OtherLoc {
   name: string;
 }
 
-app.get("/loc", (req: Request, res: Response) => {
-  if (req.isAuthenticated()) {
-    const reqUser = req.user as any;
-    const githubId = reqUser.oauth_id;
-    getLoc().then((data) => {
-      const result: LocData = {
-        user: {
-          lat: 0,
-          lng: 0,
-          name: "",
-        },
-        others: [],
-      };
-      for (let userLocObj of data.rows) {
-        if (!userLocObj.lat || !userLocObj.lng) {
-          continue;
-        }
-        if (userLocObj.oauth_id === githubId) {
-          result.user.lat = userLocObj.lat;
-          result.user.lng = userLocObj.lng;
-          result.user.name = userLocObj.name;
-        } else {
-          result.others.push({ lat: userLocObj.lat, lng: userLocObj.lng });
-        }
+app.get("/loc", verifyToken, (req: Request, res: Response) => {
+  const reqUser = req.user as any;
+  const githubId = reqUser.oauth_id;
+  getLoc().then((data) => {
+    const result: LocData = {
+      user: {
+        lat: 0,
+        lng: 0,
+        name: "",
+      },
+      others: [],
+    };
+    for (let userLocObj of data.rows) {
+      if (!userLocObj.lat || !userLocObj.lng) {
+        continue;
       }
-      // console.log('result :>> ', result);
-      res.status(200).send(result);
-    });
-    return;
-  }
-  res.status(401).send("not authenticated");
+      if (userLocObj.oauth_id === githubId) {
+        result.user.lat = userLocObj.lat;
+        result.user.lng = userLocObj.lng;
+        result.user.name = userLocObj.name;
+      } else {
+        result.others.push({ lat: userLocObj.lat, lng: userLocObj.lng });
+      }
+    }
+    res.status(200).send(result);
+  });
 });
 
 // Start both HTTP and Socket.IO servers

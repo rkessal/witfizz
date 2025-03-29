@@ -19,7 +19,7 @@ import MapEditor from '../pages/MapEditor';
 
 const Sidenav = () => {
   return (
-    <Router>
+    <Router basename="/workland">
       <div>
       </div>
 

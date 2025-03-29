@@ -1,32 +1,29 @@
 import React, { useEffect, useState } from "react";
 import "./login.css";
 import "./index.css";
-import { useDispatch, useSelector } from "react-redux";
-import { SET_USER } from "../reducers/mapReducer";
 import { BsGithub } from "react-icons/bs";
+import { useAuth } from "../hooks/useAuth";
 import axios from "../config/axios";
 
-
 const Login = () => {
-  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
+  const { login, register, checkAuth } = useAuth();
 
   useEffect(() => {
-    axios.get("/user").then((data) => {
-      console.log(data);
-      dispatch(SET_USER(data.data));
-    });
-  }, [dispatch]);
+    // Check if user is already logged in
+    checkAuth();
+  }, [checkAuth]);
 
   const fetchIp = async () => {
     const request = await fetch("https://ipinfo.io/json?token=faa3194d71c80a");
     const jsonResponse = await request.json();
     return jsonResponse.loc;
   };
+
   async function saveLoc(loc) {
     await axios
       .post("/loc", { loc })
@@ -45,35 +42,24 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    try {
-      if (isRegistering) {
-        await axios.post("/auth/register", { email, password, name });
-      }
-      const response = await axios.post("/auth/login", { email, password });
-      if (response.data.user) {
-        dispatch(SET_USER(response.data.user));
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || "Une erreur s'est produite");
+    const result = isRegistering 
+      ? await register(email, password, name)
+      : await login(email, password);
+
+    if (!result.success) {
+      setError(result.error);
     }
   };
 
-
-  const userState = useSelector((state) => {
-    console.log("state:", state);
-    return state.user;
-  });
-
-  console.log(userState)
   return (
     <div className="background">
       <div className="login-container">
-        {/* <div className="login">
+        <div className="login">
           <BsGithub className="github" />
-          <a href={process.env.REACT_APP_GITHUB_LOGIN}>
+          <a href={`${process.env.REACT_APP_BACKEND_URL}/auth/github`}>
             {" Log in with Github"}
           </a>
-        </div> */}
+        </div>
 
         <div className="login-form">
           <h2>{isRegistering ? "Inscription" : "Connexion"}</h2>

@@ -77,6 +77,7 @@ const initialState = {
   gifSearchOpen: false,
 };
 export const SET_USER = createAction('SET_USER');
+export const RESET_USER = createAction('RESET_USER');
 export const WALK = createAction('WALK');
 export const UPDATE_OTHERS = createAction('UPDATE_OTHERS');
 export const SELECT_AVATAR = createAction('SELECT_AVATAR');
@@ -113,6 +114,13 @@ export const mapReducer = createReducer(initialState, (builder) => {
     if (!state.localSocketId) {
       state.players[id]['socketId'] = state.localSocketId;
     }
+  });
+
+  builder.addCase(RESET_USER, (state, action) => {
+    state.user = {
+      ...initialState.user
+    };
+    state.players = {};
   });
 
   //WALK: handle movement animation (turning and walking)
