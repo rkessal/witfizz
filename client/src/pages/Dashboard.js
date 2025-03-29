@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import 'nes.css/css/nes.min.css';
 import '../components/styles/animations.css';
 import Players from '../components/players';
@@ -8,23 +8,13 @@ import ModalInput from '../components/modal/ModalInput';
 import MainModal from '../components/modal/MainModal';
 import useMapGuide from './../hooks/useMapGuide';
 import MainNav from '../components/MainNav';
-import { SET_USER } from '../reducers/mapReducer';
-import axios from '../config/axios';
-
+import { useAuth } from '../hooks/useAuth';
 
 const Dashboard = () => {
+  console.log('Dashboard');
   const { playerNearGuide } = useMapGuide();
   const modalCanOpen = useSelector((state) => state.mapRoute.modalCanOpen);
-  const dispatch = useDispatch();
-
-  const handleLogout = async () => {
-    try {
-      await axios.get("/logout");
-      dispatch(SET_USER({ id: '', name: '', avatar: '', role: '' }));
-    } catch (err) {
-      console.error("Error logging out:", err);
-    }
-  };
+  const { logout } = useAuth();
 
   return (
     <div className="dashboard-layout stars" id="snow">
@@ -35,7 +25,7 @@ const Dashboard = () => {
         <Map x={0} />
         <Players />
         <button 
-        onClick={handleLogout}
+          onClick={logout}
           style={{
             position: 'fixed',
             top: '10px',
@@ -47,7 +37,7 @@ const Dashboard = () => {
             cursor: 'pointer',
           }}
         >
-        Quitter
+          Quitter
         </button>
         {/* <Chat canOpen={!(modalCanOpen && playerNearGuide)} /> */}
       </div>

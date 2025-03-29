@@ -1,21 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Sidenav from "./components/SideNav";
 import StateProvider from "./components/providers/StateProvider";
 import Login from "./pages/Login";
 import "./App.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { SET_USER } from "./reducers/mapReducer";
+import { useAuth } from "./hooks/useAuth";
 
 function App() {
   const userState = useSelector((state) => {
     return state.user;
   });
 
-
-
   return (
     <>
-      {!!!userState.id ? (
+      {!userState.id ? (
         <Login></Login>
       ) : (
         <div className="app">

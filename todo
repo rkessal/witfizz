@@ -9,3 +9,4 @@ map-editor
 - remove github / create accounts from witfizz interface
 - dockerize
 - refactor
+- correctly refresh jwt tokens

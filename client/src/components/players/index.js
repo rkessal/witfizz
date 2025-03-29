@@ -95,7 +95,7 @@ export default function Players({ socket }) {
   const playerListArr = Object.keys(playerListState).filter((key) => playerListState[key]['currentMap'] === currentMap.name).map((key) => (
     <Actor
       key={key}
-      sprite={`/sprites/skins/${playerListState[key]['skin']}.png`}
+      sprite={`/workland/sprites/skins/${playerListState[key]['skin']}.png`}
       dir={directions[playerListState[key]['dir']]}
       step={playerListState[key]['step']}
       position={{

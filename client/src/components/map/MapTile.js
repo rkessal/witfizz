@@ -9,7 +9,7 @@ function MapTile({ map, style }) {
       id={map}
       style={{
         boxSizing: 'border-box',
-        backgroundImage: `url(/maps/${map}.png)`,
+        backgroundImage: `url(/workland/maps/${map}.png)`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: '0 0',
         width: `${currentMap.width}px`,
